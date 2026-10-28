@@ -103,6 +103,7 @@ int main(void)
     HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
     HAL_Delay(4000);
     // commentaire
+    // test loris
   }
   /* USER CODE END 3 */
 }
