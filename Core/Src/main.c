@@ -21,7 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "capteur.h"
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,7 +46,10 @@ ADC_HandleTypeDef hadc1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+volatile float v_temp_test = 0.0f;
+volatile float temp_test = 0.0f;
+volatile float hum_test = 0.0f;
+volatile float v_hum_test = 0.0f;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -94,7 +98,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-
+Capteur_Init(&hadc1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -104,11 +108,22 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	char msg[64];
+	int len;
+
+	temp_test = Capteur_LireTemperature();
+	hum_test  = Capteur_LireHumidite();
+	v_hum_test = Capteur_LireTensionHumidite();
+	v_temp_test = Capteur_LireTensionTemperature();
+
+	len = snprintf(msg, sizeof(msg), "Temp: %.2f C | Hum: %.1f %%\r\n", temp_test, hum_test);
+	if (len > 0) {
+	  HAL_UART_Transmit(&huart2, (uint8_t *)msg, (uint16_t)len, 100);
+	}
+
     HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
     HAL_Delay(4000);
-    // commentaire
-    // test loris
-  }
+   }
   /* USER CODE END 3 */
 }
 
@@ -266,14 +281,14 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LDC_D7_GPIO_Port, LDC_D7_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(LCD_D7_GPIO_Port, LCD_D7_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LDC_RS_Pin|LDC_E_Pin|LDC_D4_Pin|LDC_D5_Pin
-                          |LDC_D6_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, LCD_RS_Pin|LCD_E_Pin|LCD_D4_Pin|LCD_D5_Pin
+                          |LCD_D6_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PWM_Ventilo_Pin */
   GPIO_InitStruct.Pin = PWM_Ventilo_Pin;
@@ -295,12 +310,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LDC_D7_Pin */
-  GPIO_InitStruct.Pin = LDC_D7_Pin;
+  /*Configure GPIO pin : LCD_D7_Pin */
+  GPIO_InitStruct.Pin = LCD_D7_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LDC_D7_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(LCD_D7_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LD3_Pin */
   GPIO_InitStruct.Pin = LD3_Pin;
@@ -309,10 +324,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD3_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LDC_RS_Pin LDC_E_Pin LDC_D4_Pin LDC_D5_Pin
-                           LDC_D6_Pin */
-  GPIO_InitStruct.Pin = LDC_RS_Pin|LDC_E_Pin|LDC_D4_Pin|LDC_D5_Pin
-                          |LDC_D6_Pin;
+  /*Configure GPIO pins : LCD_RS_Pin LCD_E_Pin LCD_D4_Pin LCD_D5_Pin
+                           LCD_D6_Pin */
+  GPIO_InitStruct.Pin = LCD_RS_Pin|LCD_E_Pin|LCD_D4_Pin|LCD_D5_Pin
+                          |LCD_D6_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
