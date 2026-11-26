@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lcd.h"
+#include "capteur.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -46,7 +47,10 @@ ADC_HandleTypeDef hadc1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+volatile float v_temp_test = 0.0f;
+volatile float temp_test = 0.0f;
+volatile float hum_test = 0.0f;
+volatile float v_hum_test = 0.0f;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -95,11 +99,11 @@ int main(void)
   MX_USART2_UART_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-
   lcd_init();
   lcd_write_line(0, "Test LCD OK");
   uint32_t t_last = HAL_GetTick();
 
+  Capteur_Init(&hadc1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -117,7 +121,22 @@ int main(void)
 	        lcd_write_line(1, buf);
 	        HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
 		}
-  }
+	char msg[64];
+	int len;
+
+	temp_test = Capteur_LireTemperature();
+	hum_test  = Capteur_LireHumidite();
+	v_hum_test = Capteur_LireTensionHumidite();
+	v_temp_test = Capteur_LireTensionTemperature();
+
+	len = snprintf(msg, sizeof(msg), "Temp: %.2f C | Hum: %.1f %%\r\n", temp_test, hum_test);
+	if (len > 0) {
+	  HAL_UART_Transmit(&huart2, (uint8_t *)msg, (uint16_t)len, 100);
+	}
+
+    HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+    HAL_Delay(4000);
+   }
   /* USER CODE END 3 */
 }
 
