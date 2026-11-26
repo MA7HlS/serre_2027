@@ -121,7 +121,6 @@ int main(void)
 	        lcd_write_line(1, buf);
 	        HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
 		}
-
 	char msg[64];
 	int len;
 
